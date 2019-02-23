@@ -21,8 +21,10 @@ using Yachne.Authentication;
 using Yachne.Common.Encrypt;
 using Yachne.Core;
 using Yachne.EntityFrameworkCore;
+using Yachne.Terminal;
 using Yachne.WebApi.Attributes;
 using Yachne.WebApi.Filters;
+using Yachne.WebApi.Models;
 
 namespace Yachne.WebApi
 {
@@ -41,7 +43,8 @@ namespace Yachne.WebApi
             string connectionString = Configuration["DB:DefaultConnectionString"];
             services.AddDbContext<YachneDBContext>(options =>
             {
-                options.UseSqlServer(EncryptProvider.RSADecrypt(connectionString, YachneConsts.privateKey));
+                //options.UseSqlServer(EncryptProvider.RSADecrypt(connectionString, YachneConsts.privateKey));
+                options.UseSqlServer(connectionString);
             });
             
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -55,12 +58,19 @@ namespace Yachne.WebApi
                     ValidIssuer = YachneAuthDefaults.User,
                     ValidAudience = YachneAuthDefaults.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:SecurityKey"])),
+
+                    // 设置Token缓冲过期时间  不设置的话默认为5分钟， 所以其实token的有效时间为  clockSkew + expTime
+                    ClockSkew = TimeSpan.FromSeconds(0)
                 };
             });
+            services.AddHttpContextAccessor();
             services.AddSession();
             services.AddMemoryCache();
             services.AddScoped<ITokenManager, TokenManager>();
+            services.AddScoped<YachneContext>();
             services.AddScoped<IAccountServices, AccountServices>();
+            services.AddScoped<ITerminalProvider, TerminalProvider>();
+            services.AddSingleton<AuthManager>();
             services.AddMvc(options =>
             {
                 options.Filters.Add<YachneAuthorizationFilter>();
@@ -81,7 +91,9 @@ namespace Yachne.WebApi
             {
                 app.UseHsts();
             }
-        
+
+            ServiceLocator.Instance = app.ApplicationServices;
+            
             app.UseSession();
             app.UseAuthentication();
             app.UseHttpsRedirection();

@@ -6,6 +6,7 @@ namespace Yachne.Application.Account.Dtos
 {
     public class LoginOutput
     {
+        public int UserId { get; set; }
         public string AccessToken { get; set; }
     }
 }

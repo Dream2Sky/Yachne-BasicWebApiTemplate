@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Yachne.Application.Account;
 using Yachne.Application.Account.Dtos;
 using Yachne.Common;
@@ -20,12 +21,10 @@ namespace Yachne.WebApi.Controllers
     [AllowAnonymous]
     public class AuthController : YachneControllerBase
     {
-        private IMemoryCache memoryCache;
         private IAccountServices accountServices;
-        public AuthController(IConfiguration configuration, IAccountServices accountServices, IMemoryCache memoryCache)
-            : base(configuration)
+
+        public AuthController(IAccountServices accountServices)
         {
-            this.memoryCache = memoryCache;
             this.accountServices = accountServices;
         }
 
@@ -53,7 +52,15 @@ namespace Yachne.WebApi.Controllers
                     throw new UserFriendlyException((int)YachneEnums.WebApiStatusCode.InValidCaptcha, $"验证码错误");
                 }
             }
-            return accountServices.GetAuthToken(input);
+            var token = accountServices.GetAuthToken(input);
+            if (token != null && !string.IsNullOrWhiteSpace(token.AccessToken))
+            {
+                // 获取token成功之后，覆盖原有相同key的token， 保证当前用户只有唯一有效token
+                // 实现同一用户互踢的效果
+                authManager.TokenDict[token.UserId] = token.AccessToken;
+            }
+
+            return token;
         }
 
         [ActionName("GetCaptcha")]

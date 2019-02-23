@@ -8,5 +8,7 @@ namespace Yachne.Authentication
     public interface ITokenManager
     {
         string GetToken<T>(T user, string securityKey, DateTime expireTime) where T : IUser;
+
+        T ResolveToken<T>(string token) where T : IUser, new();
     }
 }

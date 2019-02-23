@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,12 @@ namespace Yachne.WebApi.Filters
 {
     public class GlobalExceptionFilter : IExceptionFilter
     {
+        protected ILogger logger;
+        public GlobalExceptionFilter(ILogger<GlobalExceptionFilter> logger)
+        {
+            this.logger = logger;
+        }
+
         public void OnException(ExceptionContext context)
         {
             var result = new BasicResult();
@@ -29,6 +36,11 @@ namespace Yachne.WebApi.Filters
                 result.SetErrorResult((int)WebApiStatusCode.GeneralError, context.Exception.Message);
             }
             context.Result = new ObjectResult(result);
+            Task.Run(() =>
+            {
+                logger.LogError(context.Exception, context.Exception.Message);
+            });
+            
         }
     }
 }

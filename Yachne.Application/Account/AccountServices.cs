@@ -31,7 +31,7 @@ namespace Yachne.Application.Account
             {
                 throw new UserFriendlyException((int)YachneEnums.WebApiStatusCode.LoginFaild, "用户名密码错误, 登陆失败");
             }
-            return new LoginOutput() { AccessToken = tokenManager.GetToken(user, configuration["JWT:SecurityKey"], DateTime.UtcNow.AddMinutes(20)) };
+            return new LoginOutput() { UserId = user.Id, AccessToken = tokenManager.GetToken(user, configuration["JWT:SecurityKey"], DateTime.UtcNow.AddMinutes(1)) };
         }
     }
 }

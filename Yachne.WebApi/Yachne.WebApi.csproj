@@ -5,11 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <Compile Remove="wwwroot\**" />
+    <Content Remove="wwwroot\**" />
+    <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="wwwroot\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.7.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +23,7 @@
     <ProjectReference Include="..\Yachne.Application\Yachne.Application.csproj" />
     <ProjectReference Include="..\Yachne.EntityFrameworkCore\Yachne.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Yachne.Exceptions\Yachne.Exceptions.csproj" />
+    <ProjectReference Include="..\Yachne.Terminal\Yachne.Terminal.csproj" />
   </ItemGroup>
 
 </Project>
